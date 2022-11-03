@@ -14,7 +14,9 @@ func reader(r io.Reader) {
 		if err != nil {
 			return
 		}
-		println("Client got:", string(buf[0:n]))
+		result := string(buf[0:n])
+
+		println(result)
 	}
 }
 

@@ -1,3 +1,7 @@
-.PHONY: run
+.PHONY: run build
+
 run:
-	go run cmd/pwrstat-exporter/main.go
+	go run ./...
+
+build:
+	go build ./...
