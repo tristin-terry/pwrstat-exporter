@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	testString = `STATUS
+	sampleUps1500 = `STATUS
 	state=0
 	model_name= CP 1500C
 	battery_volt=20600
@@ -30,7 +30,7 @@ const (
 )
 
 func TestParser(t *testing.T) {
-	result := parse(testString)
+	result := parse(sampleUps1500)
 
 	if len(result) != 21 {
 		t.Fail()
