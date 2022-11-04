@@ -5,12 +5,12 @@ See sample output [here](/../../blob/main/samples/SAMPLE_METRICS.md)
 
 ## Installation
 * Install and configure [PowerPanel Personal Linux](https://www.cyberpowersystems.com/product/software/power-panel-personal/powerpanel-for-linux/)
-* run `pwrstat_exporter`
+* run `pwrstat-exporter`
 * `curl localhost:10100/metrics` to verify it is working
 * setup prometheus, example scrape config:
 ``` 
-- job_name: pwrstat_exporter
-  scrape_interval: 10s
+- job_name: pwrstat-exporter
+  scrape_interval: 15s
   static_configs:
   - targets:
     - localhost:10100
