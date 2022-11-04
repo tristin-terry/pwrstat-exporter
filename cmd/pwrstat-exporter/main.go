@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -10,7 +11,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/tristin-terry/pwrstat-prometheus-exporter/internal/pwrstat_parser"
+	"github.com/tristin-terry/pwrstat-exporter/internal/pwrstat_parser"
 )
 
 const (
@@ -88,7 +89,7 @@ func writer(c net.Conn) {
 			break
 		}
 
-		time.Sleep(15 * time.Second)
+		time.Sleep(time.Duration(*collectDelay) * time.Second)
 	}
 }
 
@@ -146,7 +147,14 @@ func init() {
 	prometheus.MustRegister(input_rating_voltage)
 }
 
+var (
+	listenAddress = flag.String("listen-address", "10100", "The address to listen on for HTTP requests.")
+	collectDelay  = flag.Int("collect-delay", 15, "The delay between each sensor reading in seconds.")
+)
+
 func main() {
+	flag.Parse()
+
 	c, err := net.Dial("unix", "/var/pwrstatd.ipc")
 	if err != nil {
 		panic(err)
@@ -159,5 +167,5 @@ func main() {
 	// The Handler function provides a default handler to expose metrics
 	// via an HTTP server. "/metrics" is the usual endpoint for that.
 	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":10100", nil))
+	log.Fatal(http.ListenAndServe(":"+*listenAddress, nil))
 }

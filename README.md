@@ -38,10 +38,21 @@ WantedBy=multi-user.target
   * `systemctl start pwrstat-exporter.service`
   * to verify it is running: `systemctl | grep pwrstat`
 
+# Arguments
+```
+pwrstat-exporter --help
+Usage of pwrstat-exporter:
+  -collect-delay int
+        The delay between each sensor reading in seconds. (default 15)
+  -listen-address string
+        The address to listen on for HTTP requests. (default "10100")
+```
+
 ## Local Development
 * Install [Go](https://go.dev/doc/install)
 * Clone the repository
 * Available makefile commands:
   * `make run` to run the app locally
+    * note: the server runs on `localhost:10101/metrics` to not collide with the default
   * `make test` to run tests
   * `make build` to build an executable

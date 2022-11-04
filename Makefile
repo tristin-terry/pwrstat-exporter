@@ -1,7 +1,7 @@
 .PHONY: run build local-install
 
 run:
-	go run ./...
+	go run ./... --listen-address 10101
 
 build:
 	go build ./cmd/pwrstat-exporter/

@@ -1,4 +1,4 @@
-module github.com/tristin-terry/pwrstat-prometheus-exporter
+module github.com/tristin-terry/pwrstat-exporter
 
 go 1.19
 
