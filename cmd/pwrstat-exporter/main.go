@@ -15,69 +15,69 @@ import (
 )
 
 const (
-	debug = false
+	namespace = "pwrstat"
 )
+
+func toFQName(name string) string {
+	return prometheus.BuildFQName(namespace, "", name)
+}
 
 var (
 	info = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "pwrstat_info",
+		Name: toFQName("info"),
 		Help: "",
 	}, []string{"model_name"})
 	output_rating_watts = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_output_rating_watts",
+		Name: toFQName("output_rating_watts"),
 		Help: "Watt rating of the UPS",
 	})
 	load_percent = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_load_percent",
+		Name: toFQName("load_percent"),
 		Help: "Percent load on the UPS",
 	})
 	load_watts = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_load_watts",
+		Name: toFQName("load_watts"),
 		Help: "Total calculated load watts (pwrstat_output_rating_watts * pwrstat_load_percent)",
 	})
 	battery_remaining_seconds = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_battery_remaining_seconds",
+		Name: toFQName("battery_remaining_seconds"),
 		Help: "",
 	})
 	is_ac_present = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_is_ac_present",
+		Name: toFQName("is_ac_present"),
 		Help: "",
 	})
 	is_battery_charging = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_is_battery_charging",
+		Name: toFQName("is_battery_charging"),
 		Help: "",
 	})
 	is_battery_discharging = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_is_battery_discharging",
+		Name: toFQName("is_battery_discharging"),
 		Help: "",
 	})
 	utility_voltage = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_utility_voltage",
+		Name: toFQName("utility_voltage"),
 		Help: "",
 	})
 	output_voltage = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_output_voltage",
+		Name: toFQName("output_voltage"),
 		Help: "",
 	})
 	diagnostic_result = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_diagnostic_result",
+		Name: toFQName("diagnostic_result"),
 		Help: "",
 	})
 	battery_capacity_percent = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_battery_capacity_percent",
+		Name: toFQName("battery_capacity_percent"),
 		Help: "",
 	})
 	battery_voltage = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_battery_voltage",
+		Name: toFQName("battery_voltage"),
 		Help: "",
 	})
 	input_rating_voltage = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "pwrstat_input_rating_voltage",
+		Name: toFQName("input_rating_voltage"),
 		Help: "",
-	})
-	model_name = prometheus.NewSummary(prometheus.SummaryOpts{
-		Name: "pwrstat_model_name",
-		Help: "model_name",
 	})
 )
 
@@ -103,7 +103,7 @@ func reader(r io.Reader) {
 		result := string(buf[0:n])
 		parsedResult := pwrstat_parser.ParseToResult(result)
 
-		if debug {
+		if *debug {
 			fmt.Println(parsedResult)
 		}
 
@@ -131,7 +131,6 @@ func updatePrometheus(parsedResults pwrstat_parser.PwrstatResult) {
 func init() {
 	// Metrics have to be registered to be exposed:
 	prometheus.MustRegister(info)
-	prometheus.MustRegister(model_name)
 	prometheus.MustRegister(output_rating_watts)
 	prometheus.MustRegister(load_percent)
 	prometheus.MustRegister(load_watts)
@@ -150,6 +149,7 @@ func init() {
 var (
 	listenAddress = flag.String("listen-address", "10100", "The address to listen on for HTTP requests.")
 	collectDelay  = flag.Int("collect-delay", 15, "The delay between each sensor reading in seconds.")
+	debug         = flag.Bool("debug", false, "Toggle debug logs.")
 )
 
 func main() {
