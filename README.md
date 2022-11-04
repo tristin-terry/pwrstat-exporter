@@ -33,10 +33,13 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 ```
-  * `systemctl daemon-reload`
-  * `systemctl enable pwrstat-exporter.service`
-  * `systemctl start pwrstat-exporter.service`
-  * to verify it is running: `systemctl | grep pwrstat`
+  * Run:
+```
+systemctl daemon-reload
+systemctl enable pwrstat-exporter.service
+systemctl start pwrstat-exporter.service
+systemctl status pwrstat-exporter.service
+```
 
 # Arguments
 ```
