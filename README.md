@@ -5,9 +5,9 @@ See sample output [here](/../../blob/main/samples/SAMPLE_METRICS.md)
 
 ## Installation
 * Install and configure [PowerPanel Personal Linux](https://www.cyberpowersystems.com/product/software/power-panel-personal/powerpanel-for-linux/)
-* run `pwrstat-exporter`
+* Run `pwrstat-exporter`
 * `curl localhost:10100/metrics` to verify it is working
-* setup prometheus, example scrape config:
+* Setup prometheus, example scrape config:
 ``` 
 - job_name: pwrstat-exporter
   scrape_interval: 15s
@@ -15,7 +15,8 @@ See sample output [here](/../../blob/main/samples/SAMPLE_METRICS.md)
   - targets:
     - localhost:10100
 ```
-* optionally set it up as a service by creating `/etc/systemd/system/pwrstat-exporter.service`:   
+* A sample Grafana dashboard is available at `/grafana/export.json`
+* Optionally set it up as a service by creating `/etc/systemd/system/pwrstat-exporter.service`:   
 ``` 
 [Unit]
 Description=Pwrstat Exporter
@@ -36,10 +37,6 @@ WantedBy=multi-user.target
   * `systemctl enable pwrstat-exporter.service`
   * `systemctl start pwrstat-exporter.service`
   * to verify it is running: `systemctl | grep pwrstat`
-
-## Usage
-* `pwrstat_exporter` starts an http server on port `10100` with endpoints:
-  * `GET /metrics`
 
 ## Local Development
 * Install [Go](https://go.dev/doc/install)
