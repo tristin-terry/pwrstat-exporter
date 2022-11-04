@@ -1,4 +1,4 @@
-package pwrstat_exporter
+package pwrstat_parser
 
 import (
 	"testing"
@@ -30,7 +30,7 @@ const (
 )
 
 func TestParser(t *testing.T) {
-	result := parse(sampleUps1500)
+	result := Parse(sampleUps1500)
 
 	if len(result) != 21 {
 		t.Fail()
