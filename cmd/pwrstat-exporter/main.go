@@ -88,7 +88,7 @@ func writer(c net.Conn) {
 			break
 		}
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(15 * time.Second)
 	}
 }
 
@@ -116,7 +116,7 @@ func updatePrometheus(parsedResults pwrstat_parser.PwrstatResult) {
 	load_percent.Set(parsedResults.LoadPercent)
 	load_watts.Set(parsedResults.LoadWatts)
 	battery_remaining_seconds.Set(parsedResults.BatteryRemainingSeconds)
-	is_ac_present.Set(parsedResults.BatteryRemainingSeconds)
+	is_ac_present.Set(parsedResults.IsAcPresent)
 	is_battery_charging.Set(parsedResults.IsBatteryCharging)
 	is_battery_discharging.Set(parsedResults.IsBatteryDischarging)
 	utility_voltage.Set(parsedResults.UtilityVoltage)
