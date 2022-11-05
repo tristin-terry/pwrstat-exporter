@@ -1,7 +1,6 @@
 package pwrstat_parser
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -54,12 +53,6 @@ func Parse(input string) map[string]string {
 		value := strings.TrimSpace(lineSplit[1])
 
 		measures[key] = value
-	}
-
-	if debug {
-		for key, val := range measures {
-			fmt.Println(key, `:`, val)
-		}
 	}
 
 	return measures

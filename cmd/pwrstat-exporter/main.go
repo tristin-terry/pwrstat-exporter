@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tristin-terry/pwrstat-exporter/internal/pwrstat_parser"
 )
@@ -22,63 +23,31 @@ func toFQName(name string) string {
 	return prometheus.BuildFQName(namespace, "", name)
 }
 
+func newGauge(name string, help string) prometheus.Gauge {
+	return promauto.NewGauge(prometheus.GaugeOpts{
+		Name: toFQName(name),
+		Help: help,
+	})
+}
+
 var (
-	info = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	output_rating_watts       = newGauge("output_rating_watts", "Watt rating of the UPS")
+	load_percent              = newGauge("load_percent", "Percent load on the UPS")
+	load_watts                = newGauge("load_watts", "Total calculated load watts (pwrstat_output_rating_watts * pwrstat_load_percent)")
+	battery_remaining_seconds = newGauge("battery_remaining_seconds", "Remaing runtime in seconds")
+	is_ac_present             = newGauge("is_ac_present", "")
+	is_battery_charging       = newGauge("is_battery_charging", "")
+	is_battery_discharging    = newGauge("is_battery_discharging", "")
+	utility_voltage           = newGauge("utility_voltage", "")
+	output_voltage            = newGauge("output_voltage", "")
+	diagnostic_result         = newGauge("diagnostic_result", "")
+	battery_capacity_percent  = newGauge("battery_capacity_percent", "")
+	battery_voltage           = newGauge("battery_voltage", "")
+	input_rating_voltage      = newGauge("input_rating_voltage", "")
+	info                      = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: toFQName("info"),
 		Help: "",
 	}, []string{"model_name"})
-	output_rating_watts = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("output_rating_watts"),
-		Help: "Watt rating of the UPS",
-	})
-	load_percent = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("load_percent"),
-		Help: "Percent load on the UPS",
-	})
-	load_watts = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("load_watts"),
-		Help: "Total calculated load watts (pwrstat_output_rating_watts * pwrstat_load_percent)",
-	})
-	battery_remaining_seconds = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("battery_remaining_seconds"),
-		Help: "",
-	})
-	is_ac_present = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("is_ac_present"),
-		Help: "",
-	})
-	is_battery_charging = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("is_battery_charging"),
-		Help: "",
-	})
-	is_battery_discharging = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("is_battery_discharging"),
-		Help: "",
-	})
-	utility_voltage = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("utility_voltage"),
-		Help: "",
-	})
-	output_voltage = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("output_voltage"),
-		Help: "",
-	})
-	diagnostic_result = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("diagnostic_result"),
-		Help: "",
-	})
-	battery_capacity_percent = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("battery_capacity_percent"),
-		Help: "",
-	})
-	battery_voltage = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("battery_voltage"),
-		Help: "",
-	})
-	input_rating_voltage = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: toFQName("input_rating_voltage"),
-		Help: "",
-	})
 )
 
 func writer(c net.Conn) {
@@ -86,7 +55,7 @@ func writer(c net.Conn) {
 		_, err := c.Write([]byte("STATUS\n\n"))
 		if err != nil {
 			log.Fatal("write error:", err)
-			break
+			return
 		}
 
 		time.Sleep(time.Duration(*collectDelay) * time.Second)
@@ -98,6 +67,7 @@ func reader(r io.Reader) {
 	for {
 		n, err := r.Read(buf[:])
 		if err != nil {
+			log.Fatal("read error:", err)
 			return
 		}
 		result := string(buf[0:n])
@@ -126,24 +96,6 @@ func updatePrometheus(parsedResults pwrstat_parser.PwrstatResult) {
 	battery_capacity_percent.Set(parsedResults.BatteryCapacityPercent)
 	battery_voltage.Set(parsedResults.BatteryVoltage)
 	input_rating_voltage.Set(parsedResults.InputRatingVoltage)
-}
-
-func init() {
-	// Metrics have to be registered to be exposed:
-	prometheus.MustRegister(info)
-	prometheus.MustRegister(output_rating_watts)
-	prometheus.MustRegister(load_percent)
-	prometheus.MustRegister(load_watts)
-	prometheus.MustRegister(battery_remaining_seconds)
-	prometheus.MustRegister(is_ac_present)
-	prometheus.MustRegister(is_battery_charging)
-	prometheus.MustRegister(is_battery_discharging)
-	prometheus.MustRegister(utility_voltage)
-	prometheus.MustRegister(output_voltage)
-	prometheus.MustRegister(diagnostic_result)
-	prometheus.MustRegister(battery_capacity_percent)
-	prometheus.MustRegister(battery_voltage)
-	prometheus.MustRegister(input_rating_voltage)
 }
 
 var (
