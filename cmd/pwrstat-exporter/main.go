@@ -15,12 +15,8 @@ import (
 	"github.com/tristin-terry/pwrstat-exporter/internal/pwrstat_parser"
 )
 
-const (
-	namespace = "pwrstat"
-)
-
 func toFQName(name string) string {
-	return prometheus.BuildFQName(namespace, "", name)
+	return prometheus.BuildFQName(*namespace, "", name)
 }
 
 func newGauge(name string, help string) prometheus.Gauge {
@@ -62,8 +58,7 @@ func writer(c net.Conn) {
 	for {
 		_, err := c.Write([]byte("STATUS\n\n"))
 		if err != nil {
-			log.Fatal("write error:", err)
-			return
+			log.Fatal("write error: ", err)
 		}
 
 		time.Sleep(time.Duration(*collectDelay) * time.Second)
@@ -71,18 +66,22 @@ func writer(c net.Conn) {
 }
 
 func reader(r io.Reader) {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 512)
 	for {
 		n, err := r.Read(buf[:])
 		if err != nil {
-			log.Fatal("read error:", err)
-			return
+			log.Fatal("read error: ", err)
 		}
 		result := string(buf[0:n])
+
+		if *debug {
+			fmt.Println("Read from socket:", result)
+		}
+
 		parsedResult := pwrstat_parser.ParseToResult(result)
 
 		if *debug {
-			fmt.Println(parsedResult)
+			fmt.Println("Parsed result:", parsedResult)
 		}
 
 		updatePrometheus(parsedResult)
@@ -115,17 +114,19 @@ func updatePrometheus(parsedResults pwrstat_parser.PwrstatResult) {
 }
 
 var (
-	listenAddress = flag.String("listen-address", "10100", "The address to listen on for HTTP requests.")
-	collectDelay  = flag.Int("collect-delay", 15, "The delay between each sensor reading in seconds.")
-	debug         = flag.Bool("debug", false, "Toggle debug logs.")
+	port          = flag.String("port", "10100", "The address to listen on for HTTP requests.")
+	namespace     = flag.String("namespace", "pwrstat", "Namespace prefix for prometheus metrics")
+	collectDelay  = flag.Int("collect.delay", 15, "The delay between each sensor reading in seconds.")
+	debug         = flag.Bool("debug", false, "Turn on debug logging.")
+	pwrstatSocket = flag.String("pwrstat.socket", "/var/pwrstatd.ipc", "Where to find the pwrstatd.ipc socket.")
 )
 
 func main() {
 	flag.Parse()
 
-	c, err := net.Dial("unix", "/var/pwrstatd.ipc")
+	c, err := net.Dial("unix", *pwrstatSocket)
 	if err != nil {
-		panic(err)
+		log.Fatal("Could not connect to pwrstatd socket at: ", pwrstatSocket)
 	}
 
 	defer c.Close()
@@ -135,5 +136,5 @@ func main() {
 	// The Handler function provides a default handler to expose metrics
 	// via an HTTP server. "/metrics" is the usual endpoint for that.
 	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":"+*listenAddress, nil))
+	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }

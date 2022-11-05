@@ -46,12 +46,18 @@ systemctl status pwrstat-exporter.service
 
 # Arguments
 ```
-pwrstat-exporter --help
+pwrstat-exporter -help
 Usage of pwrstat-exporter:
-  -collect-delay int
+  -collect.delay int
         The delay between each sensor reading in seconds. (default 15)
-  -listen-address string
+  -debug
+        Turn on debug logging.
+  -namespace string
+        Namespace prefix for prometheus metrics (default "pwrstat")
+  -port string
         The address to listen on for HTTP requests. (default "10100")
+  -pwrstat.socket string
+        Where to find the pwrstatd.ipc socket. (default "/var/pwrstatd.ipc")
 ```
 
 ## Local Development

@@ -7,9 +7,6 @@ build:
 	go build ./cmd/pwrstat-exporter/
 
 test:
-	go test ./...
-
-test-coverage:
 	go test ./... -cover
 
 test-ci:

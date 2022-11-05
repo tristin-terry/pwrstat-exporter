@@ -11,8 +11,9 @@
             "mode": "auto",
             "program": "${fileDirname}",
             "args": [
-				"--listen-address=10101",
-				"--collect-delay=5",
+				"-port=10101",
+				"-collect.delay=5",
+				"-debug",
 			]
         }
     ]
