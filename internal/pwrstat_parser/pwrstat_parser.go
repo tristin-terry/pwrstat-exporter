@@ -6,10 +6,12 @@ import (
 )
 
 const (
-	debug = false
+	debug     = false
+	separator = "="
 )
 
 type PwrstatResult struct {
+	// model_name
 	ModelName               string
 	OutputRatingWatts       float64
 	LoadPercent             float64
@@ -24,38 +26,6 @@ type PwrstatResult struct {
 	BatteryCapacityPercent  float64
 	BatteryVoltage          float64
 	InputRatingVoltage      float64
-}
-
-func Parse(input string) map[string]string {
-	measures := make(map[string]string)
-
-	splits := strings.Split(input, "\n")
-	// remove header element
-	skipFirst := strings.EqualFold(splits[0], "STATUS")
-	if skipFirst {
-		splits = splits[1:]
-	}
-
-	// clean line and split into key/val
-	for _, line := range splits {
-		cleanLine := strings.TrimSpace(line)
-		lineSplit := strings.Split(cleanLine, "=")
-
-		if len(lineSplit) != 2 {
-			continue
-		}
-
-		if strings.EqualFold(lineSplit[0], "") {
-			continue
-		}
-
-		key := strings.TrimSpace(lineSplit[0])
-		value := strings.TrimSpace(lineSplit[1])
-
-		measures[key] = value
-	}
-
-	return measures
 }
 
 // Sample Data:
@@ -81,23 +51,53 @@ func Parse(input string) map[string]string {
 // load=10000
 // battery_capacity=100
 func ParseToResult(input string) PwrstatResult {
-	mappedData := Parse(input)
 	result := PwrstatResult{}
 
-	result.ModelName = mappedData["model_name"]
-	result.BatteryVoltage = toFloat(mappedData["battery_volt"]) / 1000
-	result.InputRatingVoltage = toFloat(mappedData["input_rating_volt"]) / 1000
-	result.UtilityVoltage = toFloat(mappedData["utility_volt"]) / 1000
-	result.OutputVoltage = toFloat(mappedData["output_volt"]) / 1000
-	result.OutputRatingWatts = toFloat(mappedData["output_rating_watt"]) / 1000
-	result.DiagnosticResult = toFloat(mappedData["diagnostic_result"])
-	result.BatteryRemainingSeconds = toFloat(mappedData["battery_remainingtime"])
-	result.IsBatteryCharging = toBoolFloat(mappedData["battery_charging"])
-	result.IsAcPresent = toBoolFloat(mappedData["ac_present"])
-	result.IsBatteryDischarging = toBoolFloat(mappedData["battery_discharging"])
-	result.LoadPercent = toFloat(mappedData["load"]) / 100000
+	// mapped properties
+	splits := strings.Split(input, "\n")
+	for _, line := range splits {
+		if strings.Count(line, separator) != 1 {
+			continue
+		}
+
+		cleanLine := strings.TrimSpace(line)
+		lineSplit := strings.Split(cleanLine, separator)
+
+		key := strings.TrimSpace(lineSplit[0])
+		value := strings.TrimSpace(lineSplit[1])
+
+		switch key {
+		case "model_name":
+			result.ModelName = value
+		case "battery_volt":
+			result.BatteryVoltage = toFloat(value) / 1000
+		case "input_rating_volt":
+			result.InputRatingVoltage = toFloat(value) / 1000
+		case "utility_volt":
+			result.UtilityVoltage = toFloat(value) / 1000
+		case "output_volt":
+			result.OutputVoltage = toFloat(value) / 1000
+		case "output_rating_watt":
+			result.OutputRatingWatts = toFloat(value) / 1000
+		case "diagnostic_result":
+			result.DiagnosticResult = toFloat(value)
+		case "battery_remainingtime":
+			result.BatteryRemainingSeconds = toFloat(value)
+		case "battery_charging":
+			result.IsBatteryCharging = toBoolFloat(value)
+		case "ac_present":
+			result.IsAcPresent = toBoolFloat(value)
+		case "battery_discharging":
+			result.IsBatteryDischarging = toBoolFloat(value)
+		case "load":
+			result.LoadPercent = toFloat(value) / 100000
+		case "battery_capacity":
+			result.BatteryCapacityPercent = toFloat(value) / 100
+		}
+	}
+
+	// computed properties
 	result.LoadWatts = result.OutputRatingWatts * result.LoadPercent
-	result.BatteryCapacityPercent = toFloat(mappedData["battery_capacity"]) / 100
 
 	return result
 }
