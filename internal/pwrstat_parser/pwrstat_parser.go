@@ -3,29 +3,40 @@ package pwrstat_parser
 import (
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
-	debug     = false
-	separator = "="
+	debug           = false
+	separator       = "="
+	timeParseLayout = "2006/01/02 15:04:05"
 )
 
 type PwrstatResult struct {
-	// model_name
-	ModelName               string
-	OutputRatingWatts       float64
-	LoadPercent             float64
-	LoadWatts               float64
-	BatteryRemainingSeconds float64
-	IsAcPresent             float64
-	IsBatteryCharging       float64
-	IsBatteryDischarging    float64
-	UtilityVoltage          float64
-	OutputVoltage           float64
-	DiagnosticResult        float64
-	BatteryCapacityPercent  float64
-	BatteryVoltage          float64
-	InputRatingVoltage      float64
+	State                     float64
+	ModelName                 string
+	BatteryVoltage            float64
+	InputRatingVoltage        float64
+	OutputRatingWatts         float64
+	IsAvrSupported            float64
+	IsOnlineType              float64
+	DiagnosticResult          float64
+	DiagnosticDateUnix        float64
+	PowerEventResult          float64
+	PowerEventDateUnix        float64
+	PowerEventDurationSeconds float64
+	BatteryRemainingSeconds   float64
+	IsBatteryCharging         float64
+	IsBatteryDischarging      float64
+	IsAcPresent               float64
+	IsBoost                   float64
+	UtilityVoltage            float64
+	OutputVoltage             float64
+	LoadPercent               float64
+	BatteryCapacityPercent    float64
+
+	// computed by OutputRatingWatts * LoadPercent
+	LoadWatts float64
 }
 
 // Sample Data:
@@ -67,28 +78,44 @@ func ParseToResult(input string) PwrstatResult {
 		value := strings.TrimSpace(lineSplit[1])
 
 		switch key {
+		case "state":
+			result.State = toFloat(value)
 		case "model_name":
 			result.ModelName = value
 		case "battery_volt":
 			result.BatteryVoltage = toFloat(value) / 1000
 		case "input_rating_volt":
 			result.InputRatingVoltage = toFloat(value) / 1000
-		case "utility_volt":
-			result.UtilityVoltage = toFloat(value) / 1000
-		case "output_volt":
-			result.OutputVoltage = toFloat(value) / 1000
 		case "output_rating_watt":
 			result.OutputRatingWatts = toFloat(value) / 1000
+		case "avr_supported":
+			result.IsAvrSupported = toBoolFloat(value)
+		case "online_type":
+			result.IsOnlineType = toBoolFloat(value)
 		case "diagnostic_result":
 			result.DiagnosticResult = toFloat(value)
+		case "diagnostic_date":
+			result.DiagnosticDateUnix = ParseDateStringToUnix(value)
+		case "power_event_result":
+			result.PowerEventResult = toFloat(value)
+		case "power_event_date":
+			result.PowerEventDateUnix = ParseDateStringToUnix(value)
+		case "power_event_during":
+			result.PowerEventDurationSeconds = toFloat(strings.Split(value, " ")[0])
 		case "battery_remainingtime":
 			result.BatteryRemainingSeconds = toFloat(value)
 		case "battery_charging":
 			result.IsBatteryCharging = toBoolFloat(value)
-		case "ac_present":
-			result.IsAcPresent = toBoolFloat(value)
 		case "battery_discharging":
 			result.IsBatteryDischarging = toBoolFloat(value)
+		case "ac_present":
+			result.IsAcPresent = toBoolFloat(value)
+		case "boost":
+			result.IsBoost = toBoolFloat(value)
+		case "utility_volt":
+			result.UtilityVoltage = toFloat(value) / 1000
+		case "output_volt":
+			result.OutputVoltage = toFloat(value) / 1000
 		case "load":
 			result.LoadPercent = toFloat(value) / 100000
 		case "battery_capacity":
@@ -117,4 +144,13 @@ func toFloat(in string) float64 {
 	}
 
 	return result
+}
+
+func ParseDateStringToUnix(in string) float64 {
+	result, err := time.Parse(timeParseLayout, in)
+	if err != nil {
+		return 0
+	}
+
+	return float64(result.Unix())
 }

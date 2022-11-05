@@ -9,5 +9,11 @@ build:
 test:
 	go test ./...
 
+test-coverage:
+	go test ./... -cover
+
+test-ci:
+	go test ./... -race -coverprofile=coverage.out -covermode=atomic
+
 local-install: build 
 	mv pwrstat-exporter /usr/local/bin/ && systemctl restart pwrstat-exporter.service
