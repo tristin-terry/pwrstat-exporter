@@ -3,6 +3,8 @@ A Prometheus exporter for PowerPanel Personal Linux (pwrstat cli) built in Go.
 
 See sample output [here](/../../blob/main/samples/SAMPLE_METRICS.md)
 
+[![codecov](https://codecov.io/gh/tristin-terry/pwrstat-exporter/branch/main/graph/badge.svg?token=L5I6DJDOF1)](https://codecov.io/gh/tristin-terry/pwrstat-exporter)
+
 ## Installation
 * Install and configure [PowerPanel Personal Linux](https://www.cyberpowersystems.com/product/software/power-panel-personal/powerpanel-for-linux/)
 * Download `pwrstat-exporter` from the most recent build artifacts or build locally (`make build`)
