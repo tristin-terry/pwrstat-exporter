@@ -2,7 +2,7 @@ module github.com/tristin-terry/pwrstat-exporter
 
 go 1.19
 
-require github.com/prometheus/client_golang v1.13.1
+require github.com/prometheus/client_golang v1.14.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -15,7 +15,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/stretchr/testify v1.8.1
