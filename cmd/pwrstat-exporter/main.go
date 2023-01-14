@@ -20,7 +20,7 @@ func toFQName(name string) string {
 }
 
 func newGauge(name string, help string) prometheus.Gauge {
-	return promauto.NewGauge(prometheus.GaugeOpts{
+	return promauto.With(reg).NewGauge(prometheus.GaugeOpts{
 		Name: toFQName(name),
 		Help: help,
 	})
@@ -32,6 +32,7 @@ var (
 		Name: toFQName("info"),
 		Help: "",
 	}, []string{"model_name"})
+	reg                          = prometheus.NewRegistry()
 	battery_voltage              = newGauge("battery_voltage", "")
 	input_rating_voltage         = newGauge("input_rating_voltage", "")
 	output_rating_watts          = newGauge("output_rating_watts", "Watt rating of the UPS")
@@ -124,6 +125,8 @@ var (
 func main() {
 	flag.Parse()
 
+	reg.MustRegister(info)
+
 	c, err := net.Dial("unix", *pwrstatSocket)
 	if err != nil {
 		log.Fatal("Could not connect to pwrstatd socket at: ", pwrstatSocket)
@@ -133,8 +136,6 @@ func main() {
 	go reader(c)
 	go writer(c)
 
-	// The Handler function provides a default handler to expose metrics
-	// via an HTTP server. "/metrics" is the usual endpoint for that.
-	http.Handle("/metrics", promhttp.Handler())
+	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
