@@ -16,7 +16,7 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
     - run: make build
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: pwrstat-exporter
         path: ./pwrstat-exporter
