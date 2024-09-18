@@ -2,7 +2,7 @@ module github.com/tristin-terry/pwrstat-exporter
 
 go 1.22
 
-require github.com/prometheus/client_golang v1.20.3
+require github.com/prometheus/client_golang v1.20.4
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
